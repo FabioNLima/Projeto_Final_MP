@@ -20,11 +20,12 @@ struct grafo{
 
 struct vertice{
     int id;
-    char *login, *email, *senha, *nome_completo;
+    char *login, *nome_completo, *email, *senha;
 
 };
 
 typedef struct grafo *Grafo;
+static Grafo g;
 
 /***************************************************************************
  * Função: criar a estrutura de um grafo
@@ -254,7 +255,7 @@ struct vertice * vizinhos(Grafo, int x);
  *          Adiciona o vértice x no grafo g
  ****************************************************************************/
 
-void adiciona_vertice(Grafo, int x, char *palavra, char *email, char *senha, char *nome_completo);
+void adiciona_vertice(Grafo, int x, char *login, char *nome_completo, char *email, char *senha);
 
 /***************************************************************************
  * Função: Aloca matriz
@@ -439,6 +440,9 @@ void remove_aresta(Grafo, int x, int y);
  ****************************************************************************/
 
 float retorna_valor_vertice(Grafo, int x);
+
+
+int vertice_verificador(Grafo, char *login, char *senha);
 
 /***************************************************************************
  * Função: Altera valor de vértice

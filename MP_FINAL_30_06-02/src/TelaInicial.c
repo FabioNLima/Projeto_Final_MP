@@ -10,9 +10,11 @@
 
 int main(void)
 {
-	Grafo g = cria_grafo("REDE");
+	g = cria_grafo("REDE");
 	char valor[40];
 
-	UI_Inicializador();
+	UI_Inicializador(g);
+	//UI_Cadastro(g);
+	//print_grafo(g);
 	return 0;
 }

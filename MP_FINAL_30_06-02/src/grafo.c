@@ -99,6 +99,28 @@ int posicao_vertice(Grafo g, int nome)
     return -1;
 }
 
+int vertice_verificador(Grafo g, char *login, char *senha)
+{
+    if (sizeof(g) == 0 || g == NULL)
+    {
+        return -1;
+    }
+    
+    int i;
+    
+    for (i = 0; i < g->total_vertices ; i++)
+    {
+        if(!strcmp(g->vertices[i].login,login)&& !strcmp(g->vertices[i].senha,senha))
+        {
+            /*
+             * Se encontrou o vértice procuradao, retorna a posição no vetor de vértices
+             */
+            return i;
+        }
+    }
+    return -1;
+}
+
 bool adjacente(Grafo g, int x, int y)
 {
     int pos_x = posicao_vertice(g, x);
@@ -160,32 +182,43 @@ struct vertice * vizinhos(Grafo g, int x)
     return vizinhos;
 }
 
-void adiciona_vertice(Grafo g, int x, char *palavra, char *email, char *senha, char *nome_completo)
+void adiciona_vertice(Grafo g, int x, char *login, char *nome_completo, char *email, char *senha)
 {
     
     if (sizeof(g) == 0 || g == NULL)
-    {
+    {   
+        printf("NULL\n");
         return;
     }
 
     if (posicao_vertice(g, x) != -1)
     {
+        printf("teste\n");
         return;
     }
     
-    if(g->total_vertices > 0)
+    if(g->total_vertices >= 0)
     {
         struct vertice * temp = (struct vertice*)realloc(g->vertices, (g->total_vertices + 1) * sizeof(struct vertice));
         g->vertices = temp;
+        int tam = 0;
+        while (login[tam] != '\0')
+        {
+            tam++;
+        }
+
+        g->vertices[g->total_vertices].login = (char *)malloc(tam * sizeof(char));
+        
     }
     
     g->vertices[g->total_vertices].id = x;
-    g->vertices[g->total_vertices].login = palavra;
+    g->vertices[g->total_vertices].login = login;
+    g->vertices[g->total_vertices].nome_completo = nome_completo;
     g->vertices[g->total_vertices].email = email;
     g->vertices[g->total_vertices].senha = senha;
-    g->vertices[g->total_vertices].nome_completo = nome_completo;
 
     g->total_vertices++;
+
   
     /*
      * Instancia as arestas com valor inicial zero
@@ -404,8 +437,10 @@ void muda_valor_aresta(Grafo g, int x, int y, int valor)
     g->arestas[pos_y][pos_x] = valor;
 }
 
-void print_grafo(Grafo g)
+void print_grafo(Grafo c)
 {
+    Grafo g;
+    g = c;
     if (sizeof(g) == 0 || g == NULL)
     {
         puts("Grafo nulo");
@@ -419,7 +454,8 @@ void print_grafo(Grafo g)
     
     for (i = 0; i < g->total_vertices; i++)
     {
-        printf("Vertice %d -  valor: %s \n", g->vertices[i].id, g->vertices[i].login);
+        printf("Vertice %d -  login: %s\n", g->vertices[i].id, g->vertices[i].login);
+
     }
     
     puts("Matriz de Arestas: ");
