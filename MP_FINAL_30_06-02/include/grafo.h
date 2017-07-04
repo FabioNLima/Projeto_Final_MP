@@ -10,21 +10,21 @@
 
 #endif /* grafo_c */
 
-struct graph{
-    struct vertex * vertices;
+struct grafo{
+    struct vertice * vertices;
     char * nome;
     float ** arestas;
     int total_vertices;
     
 };
 
-struct vertex{
+struct vertice{
     int id;
     char *login, *email, *senha, *nome_completo;
 
 };
 
-typedef struct graph *Grafo;
+typedef struct grafo *Grafo;
 
 /***************************************************************************
  * Função: criar a estrutura de um grafo
@@ -160,7 +160,7 @@ void destroi_grafo(Grafo);
  *          Retorna -1 (posição não encontrada)
  ****************************************************************************/
 
-int posicao_vertex(Grafo g, int nome);
+int posicao_vertice(Grafo g, int nome);
 
 /***************************************************************************
  * Função: Verifica Adjacência
@@ -223,7 +223,7 @@ bool adjacente(Grafo, int x, int y);
  *          Retorna lista de vizinhos
  ****************************************************************************/
 
-struct vertex * vizinhos(Grafo, int x);
+struct vertice * vizinhos(Grafo, int x);
 
 /***************************************************************************
  * Função: Adiciona vértice

@@ -4,14 +4,14 @@
 Grafo cria_grafo (char * nome)
 {
     Grafo grafo;
-    grafo = malloc(sizeof(struct graph));
+    grafo = (Grafo)malloc(sizeof(struct grafo));
     if (grafo == NULL)
         return NULL;
 
-    char * temp = realloc(grafo->nome, strlen(nome) * sizeof(char));
+    char * temp = (char *)realloc(grafo->nome, strlen(nome) * sizeof(char));
     grafo->nome = temp;
     strcpy(grafo->nome , nome);
-    grafo->vertices = malloc(sizeof(struct vertice));
+    grafo->vertices = (struct vertice*)malloc(sizeof(struct vertice));
     grafo->total_vertices = 0;
 
     return grafo;
@@ -77,7 +77,7 @@ void destroi_grafo(Grafo g)
     }
 }
 
-int posicao_vertex(Grafo g, int nome)
+int posicao_vertice(Grafo g, int nome)
 {
     if (sizeof(g) == 0 || g == NULL)
     {
@@ -101,8 +101,8 @@ int posicao_vertex(Grafo g, int nome)
 
 bool adjacente(Grafo g, int x, int y)
 {
-    int pos_x = posicao_vertex(g, x);
-    int pos_y = posicao_vertex(g, y);
+    int pos_x = posicao_vertice(g, x);
+    int pos_y = posicao_vertice(g, y);
     
     if(pos_x == -1 || pos_y == -1)
     {
@@ -120,7 +120,7 @@ bool adjacente(Grafo g, int x, int y)
     return false;
 }
 
-struct vertex * vizinhos(Grafo g, int x)
+struct vertice * vizinhos(Grafo g, int x)
 {
     if (g == NULL)
     {
@@ -128,14 +128,14 @@ struct vertex * vizinhos(Grafo g, int x)
         return NULL;
     }
     
-    int pos_x = posicao_vertex(g, x);
+    int pos_x = posicao_vertice(g, x);
     
     if (pos_x == -1)
     {
         return NULL;
     }
 
-    struct vertex * vizinhos = NULL;
+    struct vertice * vizinhos = NULL;
     int total = 0;
     
     int i;
@@ -149,9 +149,9 @@ struct vertex * vizinhos(Grafo g, int x)
              * busca os vizinhos: itera entre todos os vértices e verifica peso da aresta (i, x)
              * se peso da aresta > 0,  imprime me tela tal vértice e o adiciona na lista de retorno
              */
-            vizinhos = realloc(vizinhos, (total + 1) * sizeof(struct vertex));
+            vizinhos = (struct vertice*)realloc(vizinhos, (total + 1) * sizeof(struct vertice));
             vizinhos[total] = g->vertices[i];
-            printf("Vertice %d -  valor: %s \n", g->vertices[i].id, g->vertices[i].valor);
+            printf("Vertice %d -  valor: %s \n", g->vertices[i].id, g->vertices[i].login);
             total++;
         }
         
@@ -168,14 +168,14 @@ void adiciona_vertice(Grafo g, int x, char *palavra, char *email, char *senha, c
         return;
     }
 
-    if (posicao_vertex(g, x) != -1)
+    if (posicao_vertice(g, x) != -1)
     {
         return;
     }
     
     if(g->total_vertices > 0)
     {
-        struct vertex * temp = realloc(g->vertices, (g->total_vertices + 1) * sizeof(struct vertex));
+        struct vertice * temp = (struct vertice*)realloc(g->vertices, (g->total_vertices + 1) * sizeof(struct vertice));
         g->vertices = temp;
     }
     
@@ -197,7 +197,7 @@ void adiciona_vertice(Grafo g, int x, char *palavra, char *email, char *senha, c
 float ** aloca_matriz(float ** matriz, int elements)
 {
     int i;
-    matriz = malloc(sizeof(float) * elements * elements);
+    matriz = (float**)malloc(sizeof(float) * elements * elements);
     
     if(matriz != NULL)
     {
@@ -210,7 +210,7 @@ float ** aloca_matriz(float ** matriz, int elements)
             /*
              * Aloca um vetor de vértices para cada linha
              */
-            matriz[i] = malloc(sizeof(float) * elements);
+            matriz[i] = (float*)malloc(sizeof(float) * elements);
             if(matriz[i] == NULL)
             {
                 return NULL;
@@ -257,7 +257,7 @@ float ** realoca_matriz(float ** matriz, int elements)
 
 void remove_vertice(Grafo g, int x)
 {
-    int pos_x = posicao_vertex(g, x);
+    int pos_x = posicao_vertice(g, x);
     
     if (pos_x == -1)
     {
@@ -297,7 +297,7 @@ void remove_vertice(Grafo g, int x)
      * Copia a lista de vértices
      */
     
-    struct vertex *cp = malloc(sizeof(struct vertex)*(g->total_vertices-1));
+    struct vertice *cp = (struct vertice*)malloc(sizeof(struct vertice)*(g->total_vertices-1));
     int pos = 0;
     
     for (i = 0; i < g->total_vertices; i++)
@@ -321,8 +321,8 @@ void remove_vertice(Grafo g, int x)
 
 void adiciona_aresta(Grafo g, int x, int y)
 {
-    int pos_x = posicao_vertex(g, x);
-    int pos_y = posicao_vertex(g, y);
+    int pos_x = posicao_vertice(g, x);
+    int pos_y = posicao_vertice(g, y);
     
     if (pos_x == -1 || pos_y == -1)
     {
@@ -336,8 +336,8 @@ void adiciona_aresta(Grafo g, int x, int y)
 
 void remove_aresta(Grafo g , int x, int y)
 {
-    int pos_x = posicao_vertex(g, x);
-    int pos_y = posicao_vertex(g, y);
+    int pos_x = posicao_vertice(g, x);
+    int pos_y = posicao_vertice(g, y);
     
     if (pos_x == -1 || pos_y == -1 || g->arestas[pos_y][pos_x] == 0)
     {
@@ -350,21 +350,23 @@ void remove_aresta(Grafo g , int x, int y)
     g->arestas[pos_y][pos_x] = 0;
 }
 
+/*
 char *retorna_valor_vertice(Grafo g, int x)
 {
-    int pos_x = posicao_vertex(g, x);
+    int pos_x = posicao_vertice(g, x);
     
     if (pos_x == -1)
     {
         return -1;
     }
     
-    return g->vertices[pos_x].valor;
+    return g->vertices[pos_x].email;
 }
+
 
 void muda_valor_vertice(Grafo g, int x, int valor)
 {
-    int pos_x = posicao_vertex(g, x);
+    int pos_x = posicao_vertice(g, x);
     if (pos_x == -1)
     {
         return;
@@ -372,10 +374,12 @@ void muda_valor_vertice(Grafo g, int x, int valor)
     g->vertices[pos_x].valor = valor;
 }
 
+*/
+
 float retorna_valor_aresta(Grafo g, int x, int y)
 {
-    int pos_x = posicao_vertex(g, x);
-    int pos_y = posicao_vertex(g, y);
+    int pos_x = posicao_vertice(g, x);
+    int pos_y = posicao_vertice(g, y);
     
     if (pos_x == -1 || pos_y == -1)
     {
@@ -389,8 +393,8 @@ float retorna_valor_aresta(Grafo g, int x, int y)
 
 void muda_valor_aresta(Grafo g, int x, int y, int valor)
 {
-    int pos_x = posicao_vertex(g, x);
-    int pos_y = posicao_vertex(g, y);
+    int pos_x = posicao_vertice(g, x);
+    int pos_y = posicao_vertice(g, y);
     
     if (pos_x == -1 || pos_y == -1 || g->arestas[pos_y][pos_x] == 0)
     {
@@ -415,7 +419,7 @@ void print_grafo(Grafo g)
     
     for (i = 0; i < g->total_vertices; i++)
     {
-        printf("Vertice %d -  valor: %s \n", g->vertices[i].id, g->vertices[i].valor);
+        printf("Vertice %d -  valor: %s \n", g->vertices[i].id, g->vertices[i].login);
     }
     
     puts("Matriz de Arestas: ");
