@@ -5,7 +5,6 @@
 */
 #include <stdlib.h>
 
-
 typedef struct lista
 {
 	char *informacao;
@@ -57,8 +56,4 @@ int muda_valor_vertice(Grafo *, int, void *);
 void *retorna_valor_aresta(Grafo *, int, int);
 int muda_valor_aresta(Grafo *, int, int, void *);
 
-Vertice *verificador_login(Grafo *, char *, char *);
-
-int total_vertice(Grafo *g);
-
-//char **nomes_vertices(Grafo *g, int x);
+int verificador_login(Grafo *, char *, char *);

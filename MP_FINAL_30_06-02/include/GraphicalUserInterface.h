@@ -32,28 +32,7 @@ void UI_Login(Grafo *g);
  * @brief Tela responsável pelo login na rede social
  *@param Recebe uma TAD tipo grafo, para verificar se está cadastrado ou não na rede
  */ 
-void UI_PaginaInicial(Grafo *g, Vertice *aux);
-
-
-/**@fn void UI_Amizade()
- * @brief Tela responsável pelo login na rede social
- *@param Recebe uma TAD tipo grafo, para verificar se está cadastrado ou não na rede
- */
-void UI_Amizade(Grafo *g, Vertice *aux);
-
-
-/**@fn void UI_AdicionarAmigos()
- * @brief Tela responsável pelo login na rede social
- *@param Recebe uma TAD tipo grafo, para verificar se está cadastrado ou não na rede
- */
-void UI_AdicionarAmigos(Grafo *g, Vertice *aux);
-
-
-/**@fn void UI_Amigos()
- * @brief Tela responsável pelo login na rede social
- *@param Recebe uma TAD tipo grafo, para verificar se está cadastrado ou não na rede
- */
-void UI_Amigos(Grafo *g, Vertice *aux);
+void UI_PaginaInicial();
 
 
 #endif

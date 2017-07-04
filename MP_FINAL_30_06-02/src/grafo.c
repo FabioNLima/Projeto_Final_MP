@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 
-int ID = 0;
-
 Grafo* cria_grafo(char *nome){
 	Grafo *grafo;
 	if (nome != NULL){
@@ -116,13 +114,11 @@ Vizinhos* vizinhos(Grafo *grafo, int x){
 }
 
 int adiciona_vertice(Grafo *grafo, int x, char *login, char *nome, char *email, char *senha){
-	
-    Vertice *p_vertice;
-    ID++;
+	Vertice *p_vertice;
 
     if (grafo != NULL){
         p_vertice = grafo->inicio;
-        while ((p_vertice != NULL) && (p_vertice->id != ID)){
+        while ((p_vertice != NULL) && (p_vertice->id != x)){
             p_vertice = p_vertice->prox;
         }
         if (p_vertice != NULL)
@@ -132,7 +128,7 @@ int adiciona_vertice(Grafo *grafo, int x, char *login, char *nome, char *email, 
         if (p_vertice == NULL)
             return 1;
 
-        p_vertice->id = ID;
+        p_vertice->id = x;
         p_vertice->login = (char*)malloc(sizeof(char) * (strlen(login) + 1));
         p_vertice->nome = (char*)malloc(sizeof(char) * (strlen(nome) + 1));
         p_vertice->email = (char*)malloc(sizeof(char) * (strlen(email) + 1));
@@ -145,14 +141,10 @@ int adiciona_vertice(Grafo *grafo, int x, char *login, char *nome, char *email, 
         p_vertice->p_arestas = NULL;
         p_vertice->prox = grafo->inicio;
         grafo->inicio = p_vertice;
-        
         return 0;
     }
     else
-    {
-        ID--;
         return 1;
-    }
 }
 
 int remove_vertice(Grafo *grafo, int x){
@@ -372,9 +364,9 @@ int muda_valor_aresta(Grafo *grafo, int x, int y, void *valor){
 
 
 
-Vertice *verificador_login(Grafo *g, char *login, char *senha)
+int verificador_login(Grafo *g, char *login, char *senha)
 {
-    Vertice *p_vertice = NULL;
+    Vertice *p_vertice;
 
     if (g != NULL){
         p_vertice = g->inicio;
@@ -383,51 +375,11 @@ Vertice *verificador_login(Grafo *g, char *login, char *senha)
         }
 
         if (p_vertice == NULL)
-            return p_vertice;
+            return 1;
         else{
-            return p_vertice;
+            return 2;
         }
     }
     else
-        return p_vertice;
+        return 1;
 }
-
-
-int total_vertice(Grafo *g)
-{
-    Vertice *p_vertice;
-    int cont = 0;
-
-    if (g != NULL){
-        p_vertice = g->inicio;
-
-        while (p_vertice != NULL){
-            p_vertice = p_vertice->prox;
-            cont++;
-        }
-    return cont;
-    }
-    else
-        return cont;
-}
-/*
-char *nomes_vertices(Grafo *g, int x)
-{
-    Vertice *p_vertice;
-    char nomes[x][40];
-
-    if (g != NULL){
-        p_vertice = g->inicio;
-
-        //nomes = (char **)malloc((sizeof(p_vertice->nome) + 1) * x);
-
-        while (p_vertice != NULL){
-            
-            //strcpy(*nomes[contador], p_vertice->nome);
-            p_vertice = p_vertice->prox;
-        }
-    return nomes;
-    }
-    else
-        return nomes;
-}*/
