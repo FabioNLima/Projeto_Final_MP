@@ -4,25 +4,25 @@ CXXFLAGS=-I$(IDIR) -g
 
 ODIR= ./obj
 
-LIBS= -lform -lncurses -lpthread
+LIBS= -lncurses -lgtest -lpthread -lgtest_main
 LIBS_C = -ftest-coverage -fprofile-arcs
 
-_DEPS = GraphicalUserInterface.h grafo.h
+_DEPS = GraphicalUserInterface.hpp grafo.hpp
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ = GraphicalUserInterface.o grafo.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(ODIR)/%.o: %.c $(DEPS)
+$(ODIR)/%.o: %.cc $(DEPS)
 	$(CXX) -c -o $@ $< $(CXXFLAGS) $(LIBS)
 
 main: $(OBJ)
-	$(CXX) $(CXXFLAGS) -o Gerenciador TelaInicial.c $(OBJ) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o Gerenciador TelaInicial.cc $(OBJ) $(LIBS) $(LIBS_C)
 
 .PHONY: teste
 
 teste: $(OBJ)
-	$(CXX) -o teste testes.cpp $(OBJ) $(CXXFLAGS) $(LIBS) 
+	$(CXX) -o teste testes.cc $(OBJ) $(CXXFLAGS) $(LIBS_C) $(LIBS)
 
 .PHONY: clean
 
