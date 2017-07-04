@@ -1,471 +1,602 @@
-
 #include "grafo.h"
+#include <string.h>
+#include <stdio.h>
 
-Grafo cria_grafo (char * nome)
-{
-    Grafo grafo;
-    grafo = (Grafo)malloc(sizeof(struct grafo));
-    if (grafo == NULL)
-        return NULL;
+int ID = 0;
 
-    char * temp = (char *)realloc(grafo->nome, strlen(nome) * sizeof(char));
-    grafo->nome = temp;
-    strcpy(grafo->nome , nome);
-    grafo->vertices = (struct vertice*)malloc(sizeof(struct vertice));
-    grafo->total_vertices = 0;
-
-    return grafo;
+Grafo* cria_grafo(char *nome){
+	Grafo *grafo;
+	if (nome != NULL){
+		grafo = (Grafo *) malloc(sizeof(Grafo));
+		if (grafo == NULL)
+            return NULL;
+		grafo->nome = (char *) malloc(sizeof(char) * (strlen(nome)));
+		if (grafo->nome == NULL)
+            return NULL;
+		strcpy(grafo->nome, nome);
+		grafo->inicio = NULL;
+		return grafo;
+	}
+	else
+		return NULL;
 }
 
-char * retorna_nome_grafo(Grafo g)
-{
-    if (g != NULL)
-    {
-        return g->nome;
-    }
-    return "null";
+char* retorna_nome_grafo(Grafo *grafo){
+	if (grafo != NULL){
+        return grafo->nome;
+	}
+	return NULL;
 }
 
-void matriz_free(float** matriz, int tamanho)
-{
-    if (sizeof(matriz) != 0)
-    {
-        int i;
-        
-        for(i = 0; i < tamanho; i++)
-        {
-            /*
-             * Libera memória de cada vetor (coluna da matriz)
-             */
-            free(matriz[i]);
+int destroi_grafo(Grafo **grafo){
+	if (*grafo != NULL){
+		Vertice *p_vertice;
+		Aresta *p_aresta;
+		p_vertice = (*grafo)->inicio;
+
+		if ((*grafo)->inicio != NULL){
+			while (p_vertice != NULL){
+				(*grafo)->inicio = (*grafo)->inicio->prox;
+				p_aresta = p_vertice->p_arestas;
+
+				while (p_aresta != NULL){
+					p_vertice->p_arestas = p_vertice->p_arestas->prox;
+					free(p_aresta);
+					p_aresta = p_vertice->p_arestas;
+				}
+				free(p_vertice);
+				p_vertice = (*grafo)->inicio;
+			}
+		}
+		free(*grafo);
+		*grafo = NULL;
+	}
+	return 0;
+}
+
+int adjacente(Grafo *grafo, int x, int y){
+	Vertice *p_vertice_x, *p_vertice_y;
+	Aresta *p_aresta;
+
+	if (grafo != NULL){
+        p_vertice_x = grafo->inicio;
+        while ((p_vertice_x != NULL) && (p_vertice_x->id != x)){
+            p_vertice_x = p_vertice_x->prox;
         }
-        
-        /*
-         * Libera memória da matriz (vetor das linhas)
-         */
-        free(matriz);
-        matriz = NULL;
-        assert (matriz == NULL);
-    }
-}
-
-void destroi_grafo(Grafo g)
-{
-    if (g== NULL)
-    {
-        return;
-    }
-    if(sizeof(g) != 0  || g != NULL)
-    {
-        /*
-         * Libera todos os componentes do vetor:
-         * matriz de arestas
-         * lista de vértices
-         * nome do grafo
-         * memória alocada para o grafo
-         */
-        matriz_free(g->arestas, g->total_vertices);
-        g->arestas = NULL;
-        free(g->vertices);
-        g->vertices = NULL;
-        free(g->nome);
-        g->nome = NULL;
-        g->total_vertices = 0;
-        free(g);
-        g = NULL;
-        assert (g == NULL);
-    }
-}
-
-int posicao_vertice(Grafo g, int nome)
-{
-    if (sizeof(g) == 0 || g == NULL)
-    {
-        return -1;
-    }
-    
-    int i;
-    
-    for (i = 0; i < g->total_vertices ; i++)
-    {
-        if(g->vertices[i].id == nome)
-        {
-            /*
-             * Se encontrou o vértice procuradao, retorna a posição no vetor de vértices
-             */
-            return i;
+        p_vertice_y = grafo->inicio;
+        while ((p_vertice_y != NULL) && (p_vertice_y->id != y)){
+            p_vertice_y = p_vertice_y->prox;
         }
-    }
-    return -1;
-}
+        if ((p_vertice_x != NULL) && (p_vertice_y != NULL)){
+            p_aresta = p_vertice_x->p_arestas;
+            while (p_aresta != NULL){
+                if (p_aresta->p_vertice->id == y)
+                    return 0;
+                p_aresta = p_aresta->prox;
+            }
 
-int vertice_verificador(Grafo g, char *login, char *senha)
-{
-    if (sizeof(g) == 0 || g == NULL)
-    {
-        return -1;
-    }
-    
-    int i;
-    
-    for (i = 0; i < g->total_vertices ; i++)
-    {
-        if(!strcmp(g->vertices[i].login,login)&& !strcmp(g->vertices[i].senha,senha))
-        {
-            /*
-             * Se encontrou o vértice procuradao, retorna a posição no vetor de vértices
-             */
-            return i;
+            p_aresta = p_vertice_y->p_arestas;
+            while (p_aresta != NULL){
+                if (p_aresta->p_vertice->id == x)
+                    return 0;
+                p_aresta = p_aresta->prox;
+            }
         }
-    }
-    return -1;
+	}
+	return 1;
 }
 
-bool adjacente(Grafo g, int x, int y)
-{
-    int pos_x = posicao_vertice(g, x);
-    int pos_y = posicao_vertice(g, y);
-    
-    if(pos_x == -1 || pos_y == -1)
-    {
-        return false;
-    }
-    
-    /*
-     * Se x e y foram encontrados, e o peso da aresta (x, y) > 0
-     * retorna verdadeiro: a aresta existe
-     * Senão retorna falso (aresta não encontrada)
-     */
-    if(g->arestas[pos_y][pos_x] > 0)
-        return true;
-    
-    return false;
-}
+Vizinhos* vizinhos(Grafo *grafo, int x){
+	Vertice *p_vertice;
+	Aresta *p_aresta;
+	Vizinhos *p_vizinhos, *p_vizinhos_aux;
 
-struct vertice * vizinhos(Grafo g, int x)
-{
-    if (g == NULL)
-    {
-        puts("Grafo nulo");
-        return NULL;
-    }
-    
-    int pos_x = posicao_vertice(g, x);
-    
-    if (pos_x == -1)
-    {
-        return NULL;
-    }
+	p_vizinhos = NULL;
 
-    struct vertice * vizinhos = NULL;
-    int total = 0;
-    
-    int i;
-    
-    for (i = 0; i < g->total_vertices; i++)
-    {
-        if(g->arestas[i][pos_x] > 0)
-        {
-            /*
-             * Se x foi encontrado (x está presente na lista de vértices):
-             * busca os vizinhos: itera entre todos os vértices e verifica peso da aresta (i, x)
-             * se peso da aresta > 0,  imprime me tela tal vértice e o adiciona na lista de retorno
-             */
-            vizinhos = (struct vertice*)realloc(vizinhos, (total + 1) * sizeof(struct vertice));
-            vizinhos[total] = g->vertices[i];
-            printf("Vertice %d -  valor: %s \n", g->vertices[i].id, g->vertices[i].login);
-            total++;
+    if (grafo != NULL){
+        p_vertice = grafo->inicio;
+        while ((p_vertice != NULL) && (p_vertice->id != x)){
+            p_vertice = p_vertice->prox;
         }
-        
-    }
-    assert (vizinhos != NULL);
-    return vizinhos;
-}
-
-void adiciona_vertice(Grafo g, int x, char *login, char *nome_completo, char *email, char *senha)
-{
-    
-    if (sizeof(g) == 0 || g == NULL)
-    {   
-        printf("NULL\n");
-        return;
-    }
-
-    if (posicao_vertice(g, x) != -1)
-    {
-        printf("teste\n");
-        return;
-    }
-    
-    if(g->total_vertices >= 0)
-    {
-        struct vertice * temp = (struct vertice*)realloc(g->vertices, (g->total_vertices + 1) * sizeof(struct vertice));
-        g->vertices = temp;
-        int tam = 0;
-        while (login[tam] != '\0')
-        {
-            tam++;
-        }
-
-        g->vertices[g->total_vertices].login = (char *)malloc(tam * sizeof(char));
-        
-    }
-    
-    g->vertices[g->total_vertices].id = x;
-    g->vertices[g->total_vertices].login = login;
-    g->vertices[g->total_vertices].nome_completo = nome_completo;
-    g->vertices[g->total_vertices].email = email;
-    g->vertices[g->total_vertices].senha = senha;
-
-    g->total_vertices++;
-
-  
-    /*
-     * Instancia as arestas com valor inicial zero
-     * Realoca matriz de vértices - aumenta o nro de linhas e colunas em 1.
-     */
-    g->arestas = realoca_matriz(g->arestas, g->total_vertices);
-}
-
-float ** aloca_matriz(float ** matriz, int elements)
-{
-    int i;
-    matriz = (float**)malloc(sizeof(float) * elements * elements);
-    
-    if(matriz != NULL)
-    {
-        /*
-         * Aloca espaço para cada linha da matriz
-         */
-        
-        for(i = 0; i < elements; i++)
-        {
-            /*
-             * Aloca um vetor de vértices para cada linha
-             */
-            matriz[i] = (float*)malloc(sizeof(float) * elements);
-            if(matriz[i] == NULL)
-            {
-                return NULL;
+        if ((p_vertice != NULL) && (p_vertice->p_arestas != NULL)){
+            p_aresta = p_vertice->p_arestas;
+            while (p_aresta != NULL){
+                p_vizinhos_aux = (Vizinhos *)malloc(sizeof(Vizinhos));
+                if (p_vizinhos_aux == NULL)
+                    return NULL;
+                p_vizinhos_aux->prox = p_vizinhos;
+                p_vizinhos_aux->p_vertice = p_aresta->p_vertice;
+                p_vizinhos = p_vizinhos_aux;
+                p_aresta = p_aresta->prox;
             }
         }
     }
-    assert (matriz != NULL);
-    return matriz;
+
+	return p_vizinhos;
 }
 
-float ** realoca_matriz(float ** matriz, int elements)
-{
-    
-    if (sizeof(matriz) == 0)
-    {
-        return NULL;
-    }
+int adiciona_vertice(Grafo *grafo, int x, char *login, char *nome, char *email, char *senha){
+	
+    Vertice *p_vertice;
+    ID++;
 
-    /*
-     * Copia a matriz de adjacências
-     */
-    float ** copia;
-    copia = aloca_matriz(copia, (elements));
-    int i, j;
-
-    /*
-     * Diminui 1 linha e 1 coluna na matriz, realocando as arestas se necessário
-     */
-    for (i = 0; i < elements; i++)
-    {
-        for (j = 0; j < elements; j++){
-            if (i == elements - 1 || j == elements - 1)
-            {
-                copia[i][j] = 0;
-            }else
-            {
-                copia[i][j] = matriz [i][j];
-            }
+    if (grafo != NULL){
+        p_vertice = grafo->inicio;
+        while ((p_vertice != NULL) && (p_vertice->id != ID)){
+            p_vertice = p_vertice->prox;
         }
+        if (p_vertice != NULL)
+            return 1;
+
+        p_vertice = (Vertice *)malloc(sizeof(Vertice));
+        if (p_vertice == NULL)
+            return 1;
+
+        p_vertice->id = ID;
+        p_vertice->login = (char*)malloc(sizeof(char) * (strlen(login) + 1));
+        p_vertice->nome = (char*)malloc(sizeof(char) * (strlen(nome) + 1));
+        p_vertice->email = (char*)malloc(sizeof(char) * (strlen(email) + 1));
+        p_vertice->senha = (char*)malloc(sizeof(char) * (strlen(senha) + 1));
+        strcpy(p_vertice->login, login);
+
+        strcpy(p_vertice->nome, nome);
+        strcpy(p_vertice->email, email);
+        strcpy(p_vertice->senha, senha);
+        p_vertice->p_arestas = NULL;
+        p_vertice->p_anuncios = NULL;
+        p_vertice->p_transacao = NULL;
+        p_vertice->prox = grafo->inicio;
+        grafo->inicio = p_vertice;
+        
+        return 0;
     }
-    assert (copia != NULL);
-    return copia;
+    else
+    {
+        ID--;
+        return 1;
+    }
 }
 
-void remove_vertice(Grafo g, int x)
-{
-    int pos_x = posicao_vertice(g, x);
-    
-    if (pos_x == -1)
-    {
-        return;
-    }
-    
-    /*
-     * Copia a matriz de adjacências
-     */
-    float ** copia;
-    copia = aloca_matriz(copia, (g->total_vertices - 1));
-    int i, j, a, b;
+int remove_vertice(Grafo *grafo, int x){
+    Vertice *p_vertice, *p_vertice1;
+    Aresta *p_aresta;
 
-    a = 0;
-    
-    /*
-     * Copia a matriz de adjacências, removendo o vértice x
-     */
-    for (i = 0; i < g->total_vertices; i++)
-    {
-        if (i != pos_x)
-        {
-            b=0;
-            for (j = 0; j < g->total_vertices; j++)
-            {
-                if (j != pos_x)
-                {
-                    copia[a][b] = g->arestas[i][j];
-                    b++;
+    if (grafo != NULL){
+        p_vertice = grafo->inicio;
+        while ((p_vertice != NULL) && (p_vertice->id != x)){
+            p_vertice = p_vertice->prox;
+        }
+
+        if (p_vertice == NULL)
+            return 1;
+
+        p_vertice = grafo->inicio;
+        while (p_vertice != NULL){
+            if (p_vertice->id == x){
+                if (grafo->inicio == p_vertice){
+                    grafo->inicio = grafo->inicio->prox;
+                    p_vertice1 = grafo->inicio;
                 }
+                else
+                    p_vertice1->prox = p_vertice->prox;
+                p_aresta = p_vertice->p_arestas;
+                while (p_aresta != NULL){
+                    p_vertice->p_arestas = p_vertice->p_arestas->prox;
+                    free(p_aresta);
+                    p_aresta = p_vertice->p_arestas;
+                }
+                free(p_vertice);
+                if(p_vertice1 != NULL)
+                    p_vertice = p_vertice1;
             }
-            a++;
+            if(p_vertice1 != NULL)
+                p_vertice1 = p_vertice;
+            p_vertice = p_vertice->prox;
+        }
+
+        return 0;
+    }
+    else
+        return 1;
+}
+
+int adiciona_aresta(Grafo *grafo, int x, int y){
+    Vertice *p_vertice_x, *p_vertice_y;
+	Aresta *p_aresta;
+
+    if (grafo != NULL){
+        p_vertice_x = grafo->inicio;
+        while ((p_vertice_x != NULL) && (p_vertice_x->id != x)){
+            p_vertice_x = p_vertice_x->prox;
+        }
+        p_vertice_y = grafo->inicio;
+        while ((p_vertice_y != NULL) && (p_vertice_y->id != y)){
+            p_vertice_y = p_vertice_y->prox;
+        }
+
+        if ((p_vertice_x != NULL) && (p_vertice_y != NULL)){
+            p_aresta = p_vertice_x->p_arestas;
+            while ((p_aresta != NULL) && (p_aresta->p_vertice->id != y)){
+                p_aresta = p_aresta->prox;
+            }
+            if (p_aresta != NULL)
+                return 1;
+
+            p_aresta = (Aresta *)malloc(sizeof(Aresta));
+            p_aresta->p_vertice = p_vertice_y;
+            p_aresta->prox = p_vertice_x->p_arestas;
+            p_vertice_x->p_arestas = p_aresta;
+            return 0;
         }
     }
-    
-    /*
-     * Copia a lista de vértices
-     */
-    
-    struct vertice *cp = (struct vertice*)malloc(sizeof(struct vertice)*(g->total_vertices-1));
-    int pos = 0;
-    
-    for (i = 0; i < g->total_vertices; i++)
-    {
-        if (i != pos_x)
-        {
-            cp[pos] = g->vertices[i];
-            pos++;
+    else
+        return 1;
+}
+
+int remove_aresta(Grafo *grafo, int x, int y){
+    Vertice *p_vertice_x, *p_vertice_y;
+	Aresta *p_aresta, *p_aresta1;
+
+    if (grafo != NULL){
+        p_vertice_x = grafo->inicio;
+        while ((p_vertice_x != NULL) && (p_vertice_x->id != x)){
+            p_vertice_x = p_vertice_x->prox;
+        }
+        p_vertice_y = grafo->inicio;
+        while ((p_vertice_y != NULL) && (p_vertice_y->id != y)){
+            p_vertice_y = p_vertice_y->prox;
+        }
+        if ((p_vertice_x != NULL) && (p_vertice_y != NULL)){
+            p_aresta = p_vertice_x->p_arestas;
+            while ((p_aresta != NULL) && (p_aresta->p_vertice->id != y)){
+                p_aresta1 = p_aresta;
+                p_aresta = p_aresta->prox;
+            }
+            if (p_aresta == NULL)
+                return 0;
+
+            else{
+                if (p_aresta == p_vertice_x->p_arestas){
+                    p_vertice_x->p_arestas = p_vertice_x->p_arestas->prox;
+                    p_aresta1 = p_vertice_x->p_arestas;
+                }
+                else
+                    p_aresta1->prox = p_aresta->prox;
+                free(p_aresta);
+                p_aresta = p_aresta1;
+            }
+            return 0;
+        }
+        else
+            return 1;
+    }
+    else
+        return 1;
+}
+
+void *retorna_valor_vertice(Grafo *grafo, int x){
+    Vertice *p_vertice;
+
+    if (grafo != NULL){
+        p_vertice = grafo->inicio;
+        while ((p_vertice != NULL) && (p_vertice->id != x)){
+            p_vertice = p_vertice->prox;
+        }
+
+        if (p_vertice == NULL)
+            return NULL;
+        else{
+            return p_vertice->valor;
         }
     }
-    
-    /*
-     * Seta a nova lista de vértices e a nova matriz para o grafo
-     * Diminuiu o nro total de vértices
-     */
-    g->arestas = copia;
-    g->vertices = cp;
-    g->total_vertices--;
-    
+    else
+        return NULL;
 }
 
-void adiciona_aresta(Grafo g, int x, int y)
-{
-    int pos_x = posicao_vertice(g, x);
-    int pos_y = posicao_vertice(g, y);
-    
-    if (pos_x == -1 || pos_y == -1)
-    {
-        return;
+int muda_valor_vertice(Grafo *grafo, int x, void *valor){
+    Vertice *p_vertice;
+
+    if (grafo != NULL){
+        p_vertice = grafo->inicio;
+        while ((p_vertice != NULL) && (p_vertice->id != x)){
+            p_vertice = p_vertice->prox;
+        }
+
+        if (p_vertice == NULL)
+            return 1;
+        else{
+            p_vertice->valor = valor;
+            return 0;
+        }
     }
-    /*
-     * Adicionar aresta: setar valor da aresa (y,x) = 1
-     */
-    g->arestas[pos_y][pos_x] = 1;
+    else
+        return 1;
 }
 
-void remove_aresta(Grafo g , int x, int y)
-{
-    int pos_x = posicao_vertice(g, x);
-    int pos_y = posicao_vertice(g, y);
-    
-    if (pos_x == -1 || pos_y == -1 || g->arestas[pos_y][pos_x] == 0)
-    {
-        return;
+void *retorna_valor_aresta(Grafo *grafo, int x, int y){
+    Vertice *p_vertice_x, *p_vertice_y;
+	Aresta *p_aresta;
+
+    if (grafo != NULL){
+        p_vertice_x = grafo->inicio;
+        while ((p_vertice_x != NULL) && (p_vertice_x->id != x)){
+            p_vertice_x = p_vertice_x->prox;
+        }
+        p_vertice_y = grafo->inicio;
+        while ((p_vertice_y != NULL) && (p_vertice_y->id != y)){
+            p_vertice_y = p_vertice_y->prox;
+        }
+
+        if ((p_vertice_x != NULL) && (p_vertice_y != NULL)){
+            p_aresta = p_vertice_x->p_arestas;
+            while ((p_aresta != NULL) && (p_aresta->p_vertice->id != y)){
+                p_aresta = p_aresta->prox;
+            }
+            if (p_aresta == NULL)
+                return NULL;
+
+            return p_aresta->valor;
+        }
     }
-    
-    /*
-     * Faz peso da aresta (y,x) =0
-     */
-    g->arestas[pos_y][pos_x] = 0;
+    else
+        return NULL;
 }
 
+int muda_valor_aresta(Grafo *grafo, int x, int y, void *valor){
+    Vertice *p_vertice_x, *p_vertice_y;
+	Aresta *p_aresta;
+
+    if (grafo != NULL){
+        p_vertice_x = grafo->inicio;
+        while ((p_vertice_x != NULL) && (p_vertice_x->id != x)){
+            p_vertice_x = p_vertice_x->prox;
+        }
+        p_vertice_y = grafo->inicio;
+        while ((p_vertice_y != NULL) && (p_vertice_y->id != y)){
+            p_vertice_y = p_vertice_y->prox;
+        }
+
+        if ((p_vertice_x != NULL) && (p_vertice_y != NULL)){
+            p_aresta = p_vertice_x->p_arestas;
+            while ((p_aresta != NULL) && (p_aresta->p_vertice->id != y)){
+                p_aresta = p_aresta->prox;
+            }
+            if (p_aresta == NULL)
+                return 1;
+
+            p_aresta->valor = valor;
+            return 0;
+        }
+    }
+    else
+        return 1;
+}
+
+
+
+Vertice *verificador_login(Grafo *g, char *login, char *senha)
+{
+    Vertice *p_vertice = NULL;
+
+    if (g != NULL){
+        p_vertice = g->inicio;
+        while ((p_vertice != NULL) && ((strcmp(p_vertice->login,login) != 0) || (strcmp(p_vertice->senha,senha) != 0))){
+            p_vertice = p_vertice->prox;
+        }
+
+        if (p_vertice == NULL)
+            return p_vertice;
+        else{
+            return p_vertice;
+        }
+    }
+    else
+        return p_vertice;
+}
+
+
+int total_vertice(Grafo *g)
+{
+    Vertice *p_vertice;
+    int cont = 0;
+
+    if (g != NULL){
+        p_vertice = g->inicio;
+
+        while (p_vertice != NULL){
+            p_vertice = p_vertice->prox;
+            cont++;
+        }
+    return cont;
+    }
+    else
+        return cont;
+}
 /*
-char *retorna_valor_vertice(Grafo g, int x)
+char *nomes_vertices(Grafo *g, int x)
 {
-    int pos_x = posicao_vertice(g, x);
-    
-    if (pos_x == -1)
-    {
-        return -1;
-    }
-    
-    return g->vertices[pos_x].email;
-}
+    Vertice *p_vertice;
+    char nomes[x][40];
 
+    if (g != NULL){
+        p_vertice = g->inicio;
 
-void muda_valor_vertice(Grafo g, int x, int valor)
-{
-    int pos_x = posicao_vertice(g, x);
-    if (pos_x == -1)
-    {
-        return;
-    }
-    g->vertices[pos_x].valor = valor;
-}
+        //nomes = (char **)malloc((sizeof(p_vertice->nome) + 1) * x);
 
-*/
-
-float retorna_valor_aresta(Grafo g, int x, int y)
-{
-    int pos_x = posicao_vertice(g, x);
-    int pos_y = posicao_vertice(g, y);
-    
-    if (pos_x == -1 || pos_y == -1)
-    {
-        return -1;
-    }
-    /*
-     * Vértice de x para y na representacao utilizada significa aresta (y, x)
-     */
-    return g->arestas[pos_y][pos_x];
-}
-
-void muda_valor_aresta(Grafo g, int x, int y, int valor)
-{
-    int pos_x = posicao_vertice(g, x);
-    int pos_y = posicao_vertice(g, y);
-    
-    if (pos_x == -1 || pos_y == -1 || g->arestas[pos_y][pos_x] == 0)
-    {
-        return;
-    }
-    
-    g->arestas[pos_y][pos_x] = valor;
-}
-
-void print_grafo(Grafo c)
-{
-    Grafo g;
-    g = c;
-    if (sizeof(g) == 0 || g == NULL)
-    {
-        puts("Grafo nulo");
-        return;
-    }
-    
-    printf("Grafo %s :\n", g->nome);
-    puts("Vertices: ");
-    
-    int i, j;
-    
-    for (i = 0; i < g->total_vertices; i++)
-    {
-        printf("Vertice %d -  login: %s\n", g->vertices[i].id, g->vertices[i].login);
-
-    }
-    
-    puts("Matriz de Arestas: ");
-    
-    for (i = 0; i < g->total_vertices; i++)
-    {
-        for (j = 0; j < g->total_vertices; j++)
-        {
-            printf("%.2f  ", g->arestas[i][j]);
+        while (p_vertice != NULL){
+            
+            //strcpy(*nomes[contador], p_vertice->nome);
+            p_vertice = p_vertice->prox;
         }
-        printf("\n");
+    return nomes;
     }
+    else
+        return nomes;
+}*/
+
+
+
+Anuncio *cria_anuncio()
+{
+    return NULL;
+}
+
+void destroi_anuncio(Anuncio **anuncio)
+{   
+    Anuncio *aux = *anuncio;
+    while(aux != NULL)
+    {
+        Anuncio *atual = aux->prox;
+        free(aux);
+        aux = atual;
+    }
+}
+
+void adiciona_anuncio(Vertice *vertice, char *tipo, char *titulo, char *descricao)
+{
+    Anuncio *novo = (Anuncio *)malloc(sizeof(Anuncio));
+    novo->tipo = (char*)malloc(sizeof(char) * (strlen(tipo) + 1));
+    novo->titulo = (char*)malloc(sizeof(char) * (strlen(titulo) + 1));
+    novo->descricao = (char*)malloc(sizeof(char) * (strlen(descricao) + 1));
+    strcpy(novo->tipo,tipo);
+    strcpy(novo->titulo,titulo);
+    strcpy(novo->descricao,descricao);
+    novo->prox = vertice->p_anuncios;
+    vertice->p_anuncios = novo;
+
+}
+
+
+
+
+
+void retira_anuncio(Anuncio *anuncio, char *titulo)
+{
+    Anuncio *ant = NULL;
+    Anuncio *aux = anuncio;
+
+    while(aux != NULL && aux->titulo != titulo)
+    {
+        ant = aux;
+        aux = aux->prox;
+    }
+
+    if(aux == NULL)
+        return;
+
+    if(ant == NULL)
+        anuncio = aux->prox;
+
+    else
+    {
+        ant->prox = aux->prox;
+    }
+    free(aux);
+    return;
+}
+
+
+Anuncio *busca_anuncio(Anuncio *anuncio, char *tipo)
+{
+    Anuncio *aux = NULL;
+    for (aux = anuncio; aux != NULL; aux = aux->prox)
+    {
+        if(aux->tipo == tipo)
+            return aux;
+    }
+    return aux;
+}
+
+int busca_anuncio_grafo(Grafo *g, char *tipo)
+{
+    Vertice *atual = NULL;
+    Anuncio *aux = NULL;
+    int contador = 0;
+    
+    if(g->inicio == NULL)
+        return -1;
+
+    for(atual = g->inicio; atual != NULL; atual = atual->prox )
+    {
+        for (aux = atual->p_anuncios; aux != NULL; aux = aux->prox)
+        {
+            if(!strcmp(aux->tipo, tipo))
+                contador++;
+        }
+           
+    }
+    return contador;
+}
+
+
+Transacao *cria_transacao()
+{
+    return NULL;
+}
+
+void destroi_transacao(Transacao **transacao)
+{
+    Transacao *aux = *transacao;
+    while(aux != NULL)
+    {
+        Transacao *atual = aux->prox;
+        free(aux);
+        aux = atual;
+    }
+}
+
+int busca_anuncio_grafo_vertice(Grafo *g, char *tipo)
+{
+    Vertice *atual = NULL;
+    Anuncio *aux = NULL;
+    int contador = 0;
+    
+    if(g->inicio == NULL)
+        return -1;
+
+    for(atual = g->inicio; atual != NULL; atual = atual->prox )
+    {
+        for (aux = atual->p_anuncios; aux != NULL; aux = aux->prox)
+        {
+            if(!strcmp(aux->tipo, tipo))
+                contador++;
+        }
+           
+    }
+    return contador;
+}
+
+void adiciona_transacao(Vertice *vertice, int avaliacao, Anuncio *anuncio)
+{
+    Transacao *novo = (Transacao *)malloc(sizeof(Transacao));
+    novo->login = vertice;
+    novo->avaliacao = avaliacao;
+    novo->p_anuncios = anuncio;
+    novo->prox = vertice->p_transacao;
+    vertice->p_transacao = novo;
+}
+
+void retira_transacao(Transacao *transacao, char *titulo)
+{
+    Transacao *ant = NULL;
+    Transacao *aux = transacao;
+
+    while(aux != NULL && aux->p_anuncios->titulo != titulo)
+    {
+        ant = aux;
+        aux = aux->prox;
+    }
+
+    if(aux == NULL)
+        return;
+
+    if(ant == NULL)
+        transacao = aux->prox;
+
+    else
+    {
+        ant->prox = aux->prox;
+    }
+    free(aux);
+    return;
 }

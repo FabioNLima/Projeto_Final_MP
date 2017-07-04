@@ -10,7 +10,8 @@
 
 int main(void)
 {
-	g = cria_grafo("REDE");
+	Grafo *g = cria_grafo("REDE");
+	
 	char valor[40];
 
 	UI_Inicializador(g);

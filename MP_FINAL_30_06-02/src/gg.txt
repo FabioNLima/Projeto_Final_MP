@@ -1,1 +1,1 @@
-xterm-256color|xterm with 256 colors xterm-256color|xterm with 256 colors  P
+1 1 1 1
